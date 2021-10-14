@@ -1,14 +1,14 @@
-from app import app
-from flask import render_template
-from app.forms import UserInfoForm, PostForm, Phonebook
+from app import app, db
+from flask import render_template, redirect, url_for, flash
+from flask_login import login_user, logout_user, current_user, login_required
+from app.forms import UserInfoForm, PostForm, Phonebook, LoginForm
 from app.models import User, Post, Address
-from app import db
 
 @app.route('/')
 def index():
     name = 'Suzette'
     title = 'Coding Temple Flask'
-    return render_template('index.html', name_of_user=name, title=title)
+    return render_template('index.html', title=title)
 
 @app.route('/products')
 def products():
@@ -25,21 +25,60 @@ def register():
         email = register_form.email.data
         password = register_form.password.data
         print(username, email, password)
+        
+        #check if username already exists
+        # existing_user = User.query.filter_by(username=username).all()
+        # if existing_user:
+        #     #Flash a warning message
+        #     flash(f'The username {username} is already in use. Do it again!', 'danger')
+        #     return redirect(url_for('register'))
+            #redirect back to the register
+
         new_user = User(username, email, password)
+        
         db.session.add(new_user)
         db.session.commit()
 
+        # flash(f'Thank you {username}, you have successfully registered!', 'success')
+        #flash takes two arguments, second argument we can use a category to change the color of our flashes
+        
+        return redirect(url_for('index'))
+    
     return render_template('register.html', form=register_form)
 
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    form = LoginForm()
+    if form.validate_on_submit():
+        username = form.username.data
+        password = form.password.data
+
+        user = User.query.filter_by(username=username).first()
+
+        if not user or not user.check_password(password):
+            flash('Your username or password is incorrect', 'danger')
+            return redirect(url_for('login'))
+        login_user(user)
+
+        # # flash(f'Welcome {user.username} You have successfully logged in.', 'success')
+    return render_template('login.html', login_form=form)
+
+@app.route('/logout')
+def logout():
+    logout_user()
+    return redirect(url_for('index'))
+
 @app.route('/createpost', methods=['GET', 'POST'])
+@login_required
 def createpost():
     form = PostForm()
     if form.validate_on_submit():
         title = form.title.data
         content = form.content.data
-        new_post = Post(title, content, user_id=1)
+        new_post = Post(title, content, current_user.id)
         db.session.add(new_post)
         db.session.commit()
+
     return render_template('createpost.html', form=form)
 
 @app.route('/registerphone', methods=['GET', 'POST'])

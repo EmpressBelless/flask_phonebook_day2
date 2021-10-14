@@ -21,3 +21,8 @@ class Phonebook(FlaskForm):
     address = StringField('Address', validators=[DataRequired()])
     phonenumber = IntegerField('Phone number', validators=[DataRequired()])
     submit = SubmitField()
+
+class LoginForm(FlaskForm):
+    username = StringField('Username', validators=[DataRequired()])
+    password = PasswordField('Password', validators=[DataRequired()])
+    submit = SubmitField()

@@ -6,9 +6,9 @@ from app.models import User, Post, Address
 
 @app.route('/')
 def index():
-    name = 'Suzette'
     title = 'Coding Temple Flask'
-    return render_template('index.html', title=title)
+    phoneb = Address.query.all()
+    return render_template('index.html', title=title, phoneb=phoneb)
 
 @app.route('/products')
 def products():
@@ -20,27 +20,23 @@ def products():
 def register():
     register_form = UserInfoForm()
     if register_form.validate_on_submit():
-        print('Hello this form has been submitted correctly')
+      
         username = register_form.username.data
         email = register_form.email.data
         password = register_form.password.data
-        print(username, email, password)
         
-        #check if username already exists
-        # existing_user = User.query.filter_by(username=username).all()
-        # if existing_user:
-        #     #Flash a warning message
-        #     flash(f'The username {username} is already in use. Do it again!', 'danger')
-        #     return redirect(url_for('register'))
-            #redirect back to the register
+        existing_user = User.query.filter_by(username=username).all()
+        if existing_user:
+            #Flash a warning message
+            flash(f'The username {username} is already in use. Do it again!', 'danger')
+            return redirect(url_for('register'))
 
         new_user = User(username, email, password)
         
         db.session.add(new_user)
         db.session.commit()
 
-        # flash(f'Thank you {username}, you have successfully registered!', 'success')
-        #flash takes two arguments, second argument we can use a category to change the color of our flashes
+        flash(f'Thank you {username}, you have successfully registered!', 'success')
         
         return redirect(url_for('index'))
     
@@ -48,19 +44,21 @@ def register():
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
+    if current_user.is_authenticated:
+        return redirect(url_for('index'))
     form = LoginForm()
     if form.validate_on_submit():
         username = form.username.data
         password = form.password.data
-
         user = User.query.filter_by(username=username).first()
 
-        if not user or not user.check_password(password):
+        if user is None or not user.check_password(password): 
             flash('Your username or password is incorrect', 'danger')
             return redirect(url_for('login'))
         login_user(user)
-
-        # # flash(f'Welcome {user.username} You have successfully logged in.', 'success')
+        flash(f'Welcome {user.username} You have successfully logged in.', 'success')
+        return redirect(url_for('index'))
+        
     return render_template('login.html', login_form=form)
 
 @app.route('/logout')
@@ -82,6 +80,7 @@ def createpost():
     return render_template('createpost.html', form=form)
 
 @app.route('/registerphone', methods=['GET', 'POST'])
+@login_required
 def registerphone():
     new_form = Phonebook()
     if new_form.validate_on_submit():
@@ -89,7 +88,13 @@ def registerphone():
         lastname = new_form.lastname.data
         address = new_form.address.data
         phonenumber = new_form.phonenumber.data
+
         new_entry = Address(firstname, lastname, address, phonenumber)
         db.session.add(new_entry)
         db.session.commit()
+    
+        flash(f'Thank you {firstname}, you have successfully updated the phonebook', 'success')
+        
+        return redirect(url_for('index'))
     return render_template('registerphone.html', form=new_form)
+

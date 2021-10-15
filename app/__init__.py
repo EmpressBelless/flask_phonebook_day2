@@ -13,7 +13,7 @@ db = SQLAlchemy(app)
 migrate = Migrate(app, db)
 
 #initilize our login manager
-login_manager = LoginManager()
+login_manager = LoginManager(app)
 login_manager.login_view = 'login'
 login_manager.login_message = 'you are not authorized. you should log in'
 login_manager.login_message_category = 'danger'

@@ -1,0 +1,16 @@
+{% extends 'base.html' %}
+
+{% block content %}
+{% if current_user.is_authenticated %}
+{% for p in phoneb %}
+<ul>
+ <li>Firstname: {{ p.firstname }}</li>
+ <li>Lastname: {{ p.lastname }}</li>
+ <li>Address: {{ p.address }}</li>
+ <li>Phone number: {{ p.phonenumber }}</li>
+</ul>
+
+{% endfor %}
+{% endif %}
+
+{% endblock %}

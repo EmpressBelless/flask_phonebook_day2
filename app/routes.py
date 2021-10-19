@@ -6,15 +6,18 @@ from app.models import User, Post, Address
 
 @app.route('/')
 def index():
-    title = 'Coding Temple Flask'
-    phoneb = Address.query.all()
-    return render_template('index.html', title=title, phoneb=phoneb)
+    return render_template('index.html')
 
 @app.route('/products')
 def products():
     title = 'Products'
     products = ['apple', 'banana', 'peach', 'orange']
     return render_template('products.html', title=title, products=products)
+
+@app.route('/phonebook')
+def phonebook():
+    phoneb = Address.query.all()
+    return render_template('phonebook.html', phoneb=phoneb)
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
